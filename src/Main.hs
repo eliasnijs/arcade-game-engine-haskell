@@ -1,4 +1,5 @@
-import VoorbeeldModule (hoi)
+import Manager
 
 main :: IO ()
-main = putStrLn hoi
+main = do
+  initialise
