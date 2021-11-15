@@ -12,14 +12,14 @@ import Config
 import End
 import Engine
 
-constructroads :: [(Vec2, Int)]
--- TODO (elias): generate random x from {left, 0, right}
-constructroads = (\(x, y) -> ((x, y), -x `div` abs x)) <$> t
+constructroads :: StdGen -> [(Vec2, Int)]
+-- TODO generate random x from {left, 0, right}
+constructroads r = (\(x, y) -> ((x, y), -x `div` abs x)) <$> t
   where
     t = [(left, y) | y <- [bottom .. top], y `mod` 3 /= 0]
 
 froggerscene :: StdGen -> Scene
-froggerscene =
+froggerscene r =
   Scene
     froggermove
     froggerupdate
@@ -27,8 +27,9 @@ froggerscene =
     []
     []
     0
-    (FroggerMode constructroads)
+    (FroggerMode $ constructroads r)
     (-1)
+    r
 
 endcheck :: Scene -> Scene
 endcheck scene
@@ -39,10 +40,14 @@ endcheck scene
   where
     p = player scene
 
--- TODO (elias): small chanch of spawning car
+-- TODO  small chanch of spawning car
 spawncars :: [(Vec2, Int)] -> [Vec2] -> [Vec2]
 spawncars roads enemies =
-  concat [[(x - dir, y), (x, y)] | ((x, y), dir) <- roads]
+  concat
+    [ [(x - dir, y), (x, y)]
+    | ((x, y), dir) <- roads
+    , not $ any (\(x2, y2) -> y == y2) enemies
+    ]
 
 movecars :: [(Vec2, Int)] -> [Vec2] -> [Vec2]
 movecars roads enemies =
